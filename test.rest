@@ -1,0 +1,86 @@
+### register
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+    "nama": "Hizkia Yogi Rafael",
+    "email": "rafaelyogi2093@gmail.com",
+    "password": "password",
+    "telepon": "08123456789",
+    "nik": "1234567890123456",
+    "id_divisi": 1,
+    "id_perusahaan": 1
+}
+
+### update user akun
+PATCH http://localhost:3000/approve/2
+Content-Type: application/json
+
+### login 
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "rafaelyogi2211@gmail.com",
+    "password": "password"
+}
+
+### Get All Users
+GET http://localhost:3000/api/users
+Content-Type: application/json
+
+### Add New User
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+    "nama": "Malik Aziz Skena",
+    "email": "malikskena@gmail.com",
+    "password": "password",
+    "telepon": "08123456789",
+    "nik": "1234567890123456",
+    "id_divisi": 1,
+    "is_admin": 0,
+    "id_perusahaan": 1
+}
+
+### Update User
+PUT http://localhost:3000/api/users/1
+Content-Type: application/json
+
+{
+    "nama": "Admin",
+    "email": "rafaelyogi2211@gmail.com",
+    "password": "password",
+    "telepon": "081959410214",
+    "nik": "1234567890123456",
+    "id_divisi": 1,
+    "is_admin": 1,
+    "id_perusahaan": 1
+}
+
+### Delete User
+DELETE http://localhost:3000/api/users/3
+Content-Type: application/json
+
+### Get All Barang
+GET http://localhost:3000/api/barang
+Content-Type: application/json
+
+### Add New Barang
+POST http://localhost:3000/api/barang
+Content-Type: application/json
+
+{
+    "nama_barang": "Laptop",
+    "jumlah": 10,
+    "id_supplier": 1,
+    "id_perusahaan": 1,
+    "id_status_barang": 1,
+    "tanggal_pembelian_barang": "2024-08-10",
+    "lokasi_barang": "Gudang 1",
+    "id_kategori": 1,
+    "nomor_seri": ["SN123", "SN124", "SN125", "SN126", "SN127", "SN128", "SN129", "SN130", "SN131", "SN132"]
+}
+
+
