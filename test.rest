@@ -63,6 +63,10 @@ Content-Type: application/json
 DELETE http://localhost:3000/api/users/3
 Content-Type: application/json
 
+### Get options
+GET http://localhost:3000/options
+
+
 ### Get All Barang
 GET http://localhost:3000/api/barang
 Content-Type: application/json

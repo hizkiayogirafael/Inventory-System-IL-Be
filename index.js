@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.js";
 import barangRoutes from "./routes/barang.js";
 import userRoutes from "./routes/user.js";
 import peminjamanRoutes from "./routes/peminjaman.js";
+import utils from "./routes/utils.js";
 import './scheduler.js';
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.use('/api/auth', authRoutes);  // Semua route auth akan memiliki prefix /api
 app.use('/api/barang', barangRoutes); // Semua route barang akan memiliki prefix /api/barang
 app.use('/api/users', userRoutes);  // Semua route user akan memiliki prefix /api/users
 app.use('/api/peminjaman', peminjamanRoutes);  // Semua route peminjaman akan memiliki prefix /api/peminjaman
+app.use(utils);  // Semua route peminjaman akan memiliki prefix /api/peminjaman
 
 app.listen(process.env.PORT, async() => {
     await connection();
