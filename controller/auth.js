@@ -63,18 +63,19 @@ const login = async (req, res) => {
             { expiresIn: '1h' }
         );
 
+        return res.status(200).cookie("token", token).json(token)
         // Kirim respons dengan token dan informasi user
-        return res.status(200).json({
-            msg: "Login berhasil",
-            token,
-            user: {
-                id: user.id_user,
-                nama: user.nama,
-                email: user.email,
-                telepon: user.telepon,
-                is_admin: isAdmin
-            }
-        });
+        // return res.status(200).json({
+        //     msg: "Login berhasil",
+        //     token,
+        //     user: {
+        //         id: user.id_user,
+        //         nama: user.nama,
+        //         email: user.email,
+        //         telepon: user.telepon,
+        //         is_admin: isAdmin
+        //     }
+        // });
 
     } catch (error) {
         console.error("Error during login:", error);
