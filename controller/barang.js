@@ -54,12 +54,12 @@ const getBarangById = async (req, res) => {
 // Memperbarui barang berdasarkan ID
 const updateBarang = async (req, res) => {
     const { id } = req.params;
-    const { nama_barang, jumlah, id_supplier, id_perusahaan, id_status_barang, tanggal_pembelian_barang, lokasi_barang } = req.body;
+    const { nama_barang, jumlah, id_supplier, id_perusahaan, id_status_barang, tanggal_pembelian_barang, lokasi_barang, id_kategori } = req.body;
 
     try {
         await query(
-            "UPDATE barang SET nama_barang = ?, jumlah = ?, id_supplier = ?, id_perusahaan = ?, id_status_barang = ?, tanggal_pembelian_barang = ?, lokasi_barang = ? WHERE id_barang = ?",
-            [nama_barang, jumlah, id_supplier, id_perusahaan, id_status_barang, tanggal_pembelian_barang, lokasi_barang, id]
+            "UPDATE barang SET nama_barang = ?, jumlah = ?, id_supplier = ?, id_perusahaan = ?, id_status_barang = ?, tanggal_pembelian_barang = ?, lokasi_barang = ?, id_kategori = ? WHERE id_barang = ?",
+            [nama_barang, jumlah, id_supplier, id_perusahaan, id_status_barang, tanggal_pembelian_barang, lokasi_barang, id_kategori, id]
         );
         return res.status(200).json({ msg: "Barang berhasil diubah" });
     } catch (error) {
