@@ -6,22 +6,17 @@ const addPeminjaman = async (req, res) => {
     const { id_user, id_kategori, id_barang, jumlah, tanggal_pinjam, tanggal_kembali, keterangan } = req.body;
 
     try {
-        // Verifikasi status barang
-        const barang = await query("SELECT * FROM barang WHERE id_barang = ?", [id_barang]);
-        if (barang[0].id_status_barang !== 1) {
-            return res.status(400).json({ msg: "Barang tidak tersedia untuk peminjaman (Maintenance)." });
-        }
+        // Ambil nomor seri yang tersedia (status 'Available')
+        const serialNumbers = await query("SELECT id_serial, nomor_seri FROM serial_number WHERE id_barang = ? AND status = 'Available' LIMIT ?", [id_barang, jumlah]);
 
-        // Verifikasi jumlah barang yang tersedia
-        if (barang[0].jumlah < jumlah) {
+        if (serialNumbers.length < jumlah) {
             return res.status(400).json({ msg: "Jumlah barang yang tersedia tidak mencukupi." });
         }
 
-        // Ambil nomor seri yang tersedia
-        const serialNumbers = await query("SELECT nomor_seri FROM serial_number WHERE id_barang = ? LIMIT ?", [id_barang, jumlah]);
-
-        // Update jumlah barang yang tersedia
-        await query("UPDATE barang SET jumlah = jumlah - ? WHERE id_barang = ?", [jumlah, id_barang]);
+        // Update status serial number menjadi 'Loan'
+        for (let serial of serialNumbers) {
+            await query("UPDATE serial_number SET status = 'Loan' WHERE id_serial = ?", [serial.id_serial]);
+        }
 
         // Simpan data peminjaman
         const result = await query(
@@ -37,6 +32,7 @@ const addPeminjaman = async (req, res) => {
         return res.status(500).json({ msg: "Terjadi kesalahan", error });
     }
 };
+
 
 // Menampilkan Peminjaman Berdasarkan User
 const getPeminjamanByUser = async (req, res) => {
@@ -70,15 +66,20 @@ const updateStatusPeminjaman = async (req, res) => {
         await query("UPDATE peminjaman SET id_status_peminjaman = ? WHERE id_peminjaman = ?", [status_peminjaman, id_peminjaman]);
 
         // Dapatkan informasi peminjaman dan user terkait
-        const peminjaman = await query("SELECT p.*, u.email, u.nama FROM peminjaman p JOIN user u ON p.id_user = u.id_user WHERE id_peminjaman = ?", [id_peminjaman]);
-        const { email, nama, id_barang, tanggal_pinjam, tanggal_kembali } = peminjaman[0];
+        const peminjaman = await query("SELECT p.*, u.email, u.nama, p.id_barang, p.jumlah FROM peminjaman p JOIN user u ON p.id_user = u.id_user WHERE id_peminjaman = ?", [id_peminjaman]);
+        const { email, nama, id_barang, jumlah, tanggal_pinjam, tanggal_kembali } = peminjaman[0];
 
         let subject = "";
         let text = "";
         let html = "";
 
-        // Mengirimkan email berdasarkan status peminjaman
         if (status_peminjaman === 2) { // Accepted
+            // Update status serial number ke "Loaned"
+            await query(
+                "UPDATE serial_number SET status_serial = 'Loaned' WHERE id_barang = ? AND status_serial = 'Available' LIMIT ?",
+                [id_barang, jumlah]
+            );
+
             subject = "Peminjaman Barang Disetujui";
             text = `Halo ${nama},\n\nPeminjaman barang Anda telah disetujui. Barang yang Anda pinjam (ID Barang: ${id_barang}) bisa diambil.\n\nTanggal Pinjam: ${tanggal_pinjam}\nTanggal Kembali: ${tanggal_kembali}\n\nTerima kasih.`;
             html = `<p>Halo ${nama},</p><p>Peminjaman barang Anda telah disetujui. Barang yang Anda pinjam (ID Barang: ${id_barang}) bisa diambil.</p><p><strong>Tanggal Pinjam:</strong> ${tanggal_pinjam}<br/><strong>Tanggal Kembali:</strong> ${tanggal_kembali}</p><p>Terima kasih.</p>`;
@@ -87,6 +88,12 @@ const updateStatusPeminjaman = async (req, res) => {
             text = `Halo ${nama},\n\nMohon maaf, peminjaman barang Anda telah ditolak. Silakan hubungi admin untuk informasi lebih lanjut.\n\nTerima kasih.`;
             html = `<p>Halo ${nama},</p><p>Mohon maaf, peminjaman barang Anda telah ditolak. Silakan hubungi admin untuk informasi lebih lanjut.</p><p>Terima kasih.</p>`;
         } else if (status_peminjaman === 4) { // Completed
+            // Update status serial number ke "Available" setelah barang dikembalikan
+            await query(
+                "UPDATE serial_number SET status_serial = 'Available' WHERE id_barang = ? AND status_serial = 'Loaned'",
+                [id_barang]
+            );
+
             subject = "Peminjaman Barang Selesai";
             text = `Halo ${nama},\n\nPeminjaman barang Anda telah selesai. Terima kasih telah mengembalikan barang tepat waktu.\n\nTerima kasih.`;
             html = `<p>Halo ${nama},</p><p>Peminjaman barang Anda telah selesai. Terima kasih telah mengembalikan barang tepat waktu.</p><p>Terima kasih.</p>`;
@@ -101,6 +108,7 @@ const updateStatusPeminjaman = async (req, res) => {
         return res.status(500).json({ msg: "Terjadi kesalahan", error });
     }
 };
+
 
 export { addPeminjaman, getPeminjamanByUser, getAllPeminjaman, updateStatusPeminjaman };
 

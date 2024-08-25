@@ -4,10 +4,10 @@ Content-Type: application/json
 
 {
     "nama": "Hizkia Yogi Rafael",
-    "email": "rafaelyogi2093@gmail.com",
+    "email": "sekutyog@gmail.com",
     "password": "password",
-    "telepon": "08123456789",
-    "nik": "1234567890123456",
+    "telepon": "08123456788",
+    "nik": "1234567890123458",
     "id_divisi": 1,
     "id_perusahaan": 1
 }
@@ -69,7 +69,10 @@ GET http://localhost:3000/options
 
 ### Get All Barang
 GET http://localhost:3000/api/barang
-Content-Type: application/json
+
+### deleted Barang
+DELETE http://localhost:3000/api/barang/7
+
 
 ### Add New Barang
 POST http://localhost:3000/api/barang
@@ -87,4 +90,48 @@ Content-Type: application/json
     "nomor_seri": ["SN123", "SN124", "SN125", "SN126", "SN127", "SN128", "SN129", "SN130", "SN131", "SN132"]
 }
 
+### get data utils
+http://localhost:3000/options
+
+### Testing Add Barang
+
+POST http://localhost:3000/api/barang
+Content-Type: application/json
+
+{
+  "nama_barang": "Laptop Dell XPS 13",
+  "jumlah": 3,
+  "id_supplier": 1,  // ID supplier yang valid
+  "id_perusahaan": 1,  // ID perusahaan yang valid
+  "id_status_barang": 1,  // 1 untuk 'Tersedia' atau 2 untuk 'Maintenance'
+  "tanggal_pembelian_barang": "2024-08-18",
+  "lokasi_barang": "Ruang IT",
+  "id_kategori": 2,  // ID kategori yang valid
+  "nomor_seri": [
+    "SN001", "SN002", "SN003"
+  ]
+}
+
+### update barang
+PUT http://localhost:3000/api/barang/3
+
+{
+    "nama_barang": "RJ47",
+    "jumlah": 1,
+    "id_supplier": 1,
+    "id_perusahaan": 1,
+    "tanggal_pembelian_barang": "2024-08-10",
+    "lokasi_barang": "Gudang 2",
+    "id_kategori": 1,
+    "nomor_seri": ["SN123"]
+}
+
+### update serial number
+PUT http://localhost:3000/api/barang/serial-number/1
+Content-Type: application/json
+
+{
+    "nomor_seri": "SN123456",
+    "status_serial": "Maintenance"
+}
 
