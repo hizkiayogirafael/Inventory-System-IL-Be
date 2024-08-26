@@ -197,33 +197,42 @@ const getSerialNumbers = async (req, res) => {
 
 // Add Serial Number to a specific Barang
 const addSerialNumber = async (req, res) => {
-    const { id_barang } = req.params;
-    const { nomor_seri, status_serial } = req.body;
+    const { id } = req.params; // Mengambil id_barang dari URL parameter
+    const { nomor_seri } = req.body; // Mengambil array nomor_seri dari body request
 
     try {
-        // Validasi bahwa id_barang ada
-        const barang = await query("SELECT * FROM barang WHERE id_barang = ?", [id_barang]);
+        // Validasi bahwa id_barang ada di tabel barang
+        const barang = await query("SELECT * FROM barang WHERE id_barang = ?", [id]);
         if (barang.length === 0) {
             return res.status(404).json({ msg: "Barang tidak ditemukan" });
         }
 
-        // Tambahkan serial number ke tabel serial_number
+        // Validasi nomor_seri harus array
+        if (!nomor_seri || !Array.isArray(nomor_seri)) {
+            return res.status(400).json({ msg: "Nomor seri tidak valid." });
+        }
+
+        // Tambahkan nomor seri ke tabel serial_number dengan status 'Available'
+        for (let i = 0; i < nomor_seri.length; i++) {
+            await query(
+                "INSERT INTO serial_number (id_barang, nomor_seri, status_serial) VALUES (?, ?, 'Available')",
+                [id, nomor_seri[i]]
+            );
+        }
+
+        // Update jumlah barang di tabel barang
         await query(
-            "INSERT INTO serial_number (id_barang, nomor_seri, status_serial) VALUES (?, ?, ?)",
-            [id_barang, nomor_seri, status_serial || 'Available']
+            "UPDATE barang SET jumlah = jumlah + ? WHERE id_barang = ?",
+            [nomor_seri.length, id]
         );
 
-        // Update jumlah barang jika diperlukan
-        await query(
-            "UPDATE barang SET jumlah = jumlah + 1 WHERE id_barang = ?",
-            [id_barang]
-        );
-
-        return res.status(201).json({ msg: "Serial number berhasil ditambahkan" });
+        return res.status(201).json({ msg: "Serial numbers berhasil ditambahkan." });
     } catch (error) {
-        return res.status(400).json({ msg: "Gagal menambahkan serial number", error });
+        console.error("Error:", error);
+        return res.status(500).json({ msg: "Gagal menambahkan serial numbers", error });
     }
 };
+
 
 //Update Serial Number
 const updateSerialNumber = async (req, res) => {

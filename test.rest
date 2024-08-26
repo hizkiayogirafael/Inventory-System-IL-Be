@@ -31,7 +31,6 @@ Content-Type: application/json
 
 ### Add New User
 POST http://localhost:3000/api/users
-Content-Type: application/json
 
 {
     "nama": "Malik Aziz Skena",
@@ -40,9 +39,9 @@ Content-Type: application/json
     "telepon": "08123456789",
     "nik": "1234567890123456",
     "id_divisi": 1,
-    "is_admin": 0,
     "id_perusahaan": 1
 }
+
 
 ### Update User
 PUT http://localhost:3000/api/users/1
@@ -117,21 +116,31 @@ PUT http://localhost:3000/api/barang/3
 
 {
     "nama_barang": "RJ47",
-    "jumlah": 1,
     "id_supplier": 1,
     "id_perusahaan": 1,
     "tanggal_pembelian_barang": "2024-08-10",
     "lokasi_barang": "Gudang 2",
     "id_kategori": 1,
-    "nomor_seri": ["SN123"]
 }
 
 ### update serial number
 PUT http://localhost:3000/api/barang/serial-number/1
-Content-Type: application/json
 
 {
     "nomor_seri": "SN123456",
     "status_serial": "Maintenance"
 }
+
+### get serial number by id
+GET http://localhost:3000/api/barang/serial-number/9
+
+### add Serial Number   
+POST http://localhost:3000/api/barang/serial-number/11
+{
+  "nomor_seri": ["SN123456", "SN654321", "SN789012"]
+}
+
+
+
+
 
