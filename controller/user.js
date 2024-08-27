@@ -92,37 +92,88 @@ const addUser = async (req, res) => {
 const getUserById = async (req, res) => {
     const { id } = req.params;
     try {
-        const user = await query("SELECT * FROM user WHERE id_user = ?", [id]);
+        const user = await query(`
+            SELECT u.id_user, u.nama, u.email, u.telepon, u.nik, d.nama_divisi, p.nama_perusahaan, u.password 
+            FROM user u
+            LEFT JOIN divisi d ON u.id_divisi = d.id_divisi
+            LEFT JOIN perusahaan p ON u.id_perusahaan = p.id_perusahaan
+            WHERE u.id_user = ?
+        `, [id]);
+
         if (user.length === 0) {
             return res.status(404).json({ msg: "User tidak ditemukan" });
         }
+
         return res.status(200).json({ msg: "Berhasil", data: user[0] });
     } catch (error) {
         return res.status(400).json({ msg: "Terjadi kesalahan", error });
     }
 };
 
+
+
 // Memperbarui user berdasarkan ID
 const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { nama, email, password, telepon, nik, id_divisi, is_admin, id_perusahaan } = req.body;
+    const { nama, email, password, telepon, nik, id_divisi, id_perusahaan, approved } = req.body;
 
     try {
-        // Jika password disertakan, hash password yang baru
-        let hashedPassword = password;
+        let hashedPassword;
+        let isAdmin;
+
+        // Hanya lakukan hashing jika password dikirimkan
         if (password) {
             const salt = await bcrypt.genSalt(10);
             hashedPassword = await bcrypt.hash(password, salt);
+        } else {
+            // Jika tidak ada password baru, ambil password lama dari database
+            const result = await query("SELECT password, is_admin FROM user WHERE id_user = ?", [id]);
+            hashedPassword = result[0].password;
+            isAdmin = result[0].is_admin;  // Ambil nilai is_admin dari database
         }
 
+        // Update user dengan password yang sudah di-hash (atau yang lama)
         await query(
-            "UPDATE user SET nama = ?, email = ?, password = ?, telepon = ?, nik = ?, id_divisi = ?, is_admin = ?, id_perusahaan = ? WHERE id_user = ?",
-            [nama, email, hashedPassword, telepon, nik, id_divisi, is_admin, id_perusahaan, id]
+            "UPDATE user SET nama = ?, email = ?, password = ?, telepon = ?, nik = ?, id_divisi = ?, is_admin = ?, id_perusahaan = ?, approved = ? WHERE id_user = ?",
+            [nama, email, hashedPassword, telepon, nik, id_divisi, isAdmin, id_perusahaan, approved, id]
         );
 
         return res.status(200).json({ msg: "User berhasil diubah" });
     } catch (error) {
         return res.status(400).json({ msg: "Gagal mengubah user", error });
+    }
+};
+
+const updateProfile = async (req, res) => {
+    const { id } = req.params;
+    const { nama, email, telepon, nik, id_divisi, id_perusahaan } = req.body;
+
+    try {
+        // Ambil data lama dari database
+        const result = await query("SELECT nama, email, password, telepon, nik, id_divisi, id_perusahaan FROM user WHERE id_user = ?", [id]);
+        if (result.length === 0) {
+            return res.status(404).json({ msg: "User tidak ditemukan" });
+        }
+
+        const existingUser = result[0];
+
+        // Gunakan data baru jika ada, atau gunakan data lama jika data baru kosong
+        const updatedNama = nama || existingUser.nama;
+        const updatedEmail = email || existingUser.email;
+        const updatedTelepon = telepon || existingUser.telepon;
+        const updatedNik = nik || existingUser.nik;
+        const updatedDivisi = id_divisi || existingUser.id_divisi;
+        const updatedPerusahaan = id_perusahaan || existingUser.id_perusahaan;
+
+        // Update user dengan data yang diperbarui
+        await query(
+            "UPDATE user SET nama = ?, email = ?, telepon = ?, nik = ?, id_divisi = ?, id_perusahaan = ? WHERE id_user = ?",
+            [updatedNama, updatedEmail, updatedTelepon, updatedNik, updatedDivisi, updatedPerusahaan, id]
+        );
+
+        return res.status(200).json({ msg: "Profile berhasil diubah" });
+    } catch (error) {
+        return res.status(400).json({ msg: "Gagal mengubah profile", error });
     }
 };
 
@@ -137,4 +188,4 @@ const deleteUser = async (req, res) => {
     }
 };
 
-export { approveUser, getAllUsers, addUser, getUserById, updateUser, deleteUser };
+export { approveUser, getAllUsers, addUser, getUserById, updateUser, deleteUser, updateProfile };

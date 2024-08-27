@@ -7,8 +7,9 @@ export const getOptions = async (req, res) => {
         const supplier = await query("SELECT * FROM supplier");
         const kategori = await query("SELECT * FROM kategori");
         const statusBarang = await query("SELECT * FROM status_barang");
+        const approved = await query("SELECT * FROM user");
 
-        return res.status(200).json({ msg: "Berhasil", perusahaan: perusahaan, divisi: divisi, supplier: supplier, kategori: kategori, statusBarang: statusBarang });
+        return res.status(200).json({ msg: "Berhasil", perusahaan: perusahaan, divisi: divisi, supplier: supplier, kategori: kategori, statusBarang: statusBarang, approved: approved });
     } catch (error) {
         return res.status(400).json({ msg: "Terjadi kesalahan", error });
     }
