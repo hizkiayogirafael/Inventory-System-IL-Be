@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/', addPeminjaman);// Route untuk menambahkan peminjaman baru
 router.get('/', getAllPeminjaman);// Route untuk mendapatkan semua peminjaman (admin)
-router.get('/status/:id_user', getPeminjamanByUser);// Route untuk mendapatkan peminjaman berdasarkan user
+router.get('/:id_user', getPeminjamanByUser);// Route untuk mendapatkan peminjaman berdasarkan user
 router.put('/status/:id_peminjaman', updateStatusPeminjaman);// Route untuk mengubah status peminjaman
 
 

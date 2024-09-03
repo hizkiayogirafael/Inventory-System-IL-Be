@@ -13,7 +13,7 @@ Content-Type: application/json
 }
 
 ### update user akun
-PATCH http://localhost:3000/approve/2
+PUT http://localhost:3000/api/users/approve/5
 Content-Type: application/json
 
 ### login 
@@ -21,7 +21,7 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "rafaelyogi2211@gmail.com",
+    "email": "sekutyog@gmail.com",
     "password": "password"
 }
 
@@ -44,19 +44,19 @@ POST http://localhost:3000/api/users
 
 
 ### Update User
-PUT http://localhost:3000/api/users/1
+PUT http://localhost:3000/api/users/5
 Content-Type: application/json
 
 {
-    "nama": "Admin",
-    "email": "rafaelyogi2211@gmail.com",
-    "password": "password",
-    "telepon": "081959410214",
-    "nik": "1234567890123456",
-    "id_divisi": 1,
-    "is_admin": 1,
-    "id_perusahaan": 1
+  "nama": "Yogi Rafael",
+  "email": "yogirafael@gmail.com",
+  "telepon": "081234569899",
+  "nik": "1234567899489",
+  "id_divisi": 2,
+  "id_perusahaan": 1,
+  "approved": 1
 }
+
 
 ### Delete User
 DELETE http://localhost:3000/api/users/3
@@ -136,10 +136,29 @@ GET http://localhost:3000/api/barang/serial-number/9
 
 ### add Serial Number   
 POST http://localhost:3000/api/barang/serial-number/11
+Content-Type: application/json
+
 {
   "nomor_seri": ["SN123456", "SN654321", "SN789012"]
 }
 
+### Create New Peminjaman
+POST http://localhost:3000/api/peminjaman/
+Content-Type: application/json
+
+{
+  "id_user": 1,
+  "id_kategori": 2,
+  "id_barang": 3,
+  "jumlah": 1,
+  "tanggal_pinjam": "2024-08-28",
+  "tanggal_kembali": "2024-09-05",
+  "keterangan": "Peminjaman untuk acara perusahaan"
+}
+
+### Get Peminjaman By User
+GET http://localhost:3000/api/peminjaman/
+Content-Type: application/json
 
 
 

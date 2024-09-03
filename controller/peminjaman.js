@@ -7,7 +7,7 @@ const addPeminjaman = async (req, res) => {
 
     try {
         // Ambil nomor seri yang tersedia (status 'Available')
-        const serialNumbers = await query("SELECT id_serial, nomor_seri FROM serial_number WHERE id_barang = ? AND status = 'Available' LIMIT ?", [id_barang, jumlah]);
+        const serialNumbers = await query("SELECT id_serial, nomor_seri FROM serial_number WHERE id_barang = ? AND status_serial = 'Available' LIMIT ?", [id_barang, jumlah]);
 
         if (serialNumbers.length < jumlah) {
             return res.status(400).json({ msg: "Jumlah barang yang tersedia tidak mencukupi." });
@@ -20,14 +20,19 @@ const addPeminjaman = async (req, res) => {
 
         // Simpan data peminjaman
         const result = await query(
-            "INSERT INTO peminjaman (id_user, id_barang, jumlah, tanggal_pinjam, tanggal_kembali, keterangan, id_status_peminjaman, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, NOW())",
-            [id_user, id_barang, jumlah, tanggal_pinjam, tanggal_kembali, keterangan]
+            "INSERT INTO peminjaman (id_user, id_kategori, id_barang, jumlah, tanggal_pinjam, tanggal_kembali, keterangan, id_status_peminjaman, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW())",
+            [id_user, id_kategori, id_barang, jumlah, tanggal_pinjam, tanggal_kembali, keterangan]
         );
 
-        // Kirim notifikasi email (opsional)
-        await sendMail(user_email, 'Peminjaman Barang', 'Peminjaman barang berhasil diajukan.');
+        // Kirim notifikasi email ke user (opsional, jika diperlukan)
+        // const user_email = ... (dapatkan email user dari database atau req.body)
+        // await sendMail(user_email, 'Peminjaman Barang', 'Peminjaman barang berhasil diajukan dengan status Pending.');
 
-        return res.status(201).json({ msg: "Peminjaman berhasil diajukan dengan status Pending.", serialNumbers: serialNumbers });
+        return res.status(201).json({
+            msg: "Peminjaman berhasil diajukan dengan status Pending.",
+            peminjaman_id: result.insertId,
+            serialNumbers: serialNumbers
+        }); 
     } catch (error) {
         return res.status(500).json({ msg: "Terjadi kesalahan", error });
     }
@@ -38,23 +43,70 @@ const addPeminjaman = async (req, res) => {
 const getPeminjamanByUser = async (req, res) => {
     const { id_user } = req.params;
 
+    if (!id_user) {
+        return res.status(400).json({ msg: "ID user tidak ditemukan" });
+    }
+
     try {
-        const peminjaman = await query("SELECT * FROM peminjaman WHERE id_user = ?", [id_user]);
+        const peminjaman = await query(`
+            SELECT 
+                peminjaman.*, 
+                user.nama AS nama_user, 
+                barang.nama_barang, 
+                kategori.nama_kategori,
+                status_peminjaman.status_peminjaman
+            FROM 
+                peminjaman
+            JOIN 
+                user ON peminjaman.id_user = user.id_user
+            JOIN 
+                barang ON peminjaman.id_barang = barang.id_barang
+            JOIN 
+                kategori ON barang.id_kategori = kategori.id_kategori
+            JOIN
+                status_peminjaman ON peminjaman.id_status_peminjaman = status_peminjaman.id_status_peminjaman 
+            WHERE peminjaman.id_user = ?
+        `, [id_user]);
+
+        if (peminjaman.length === 0) {
+            return res.status(404).json({ msg: "Data peminjaman tidak ditemukan" });
+        }
+
         return res.status(200).json({ msg: "Berhasil", data: peminjaman });
     } catch (error) {
         return res.status(500).json({ msg: "Terjadi kesalahan", error });
     }
 };
 
+
 // Menampilkan Semua Peminjaman di Admin
 const getAllPeminjaman = async (req, res) => {
     try {
-        const peminjaman = await query("SELECT * FROM peminjaman");
+        const peminjaman = await query(`
+            SELECT 
+                peminjaman.*, 
+                user.nama AS nama_user, 
+                barang.nama_barang, 
+                kategori.nama_kategori,
+                status_peminjaman.status_peminjaman
+            FROM 
+                peminjaman
+            JOIN 
+                user ON peminjaman.id_user = user.id_user
+            JOIN 
+                barang ON peminjaman.id_barang = barang.id_barang
+            JOIN 
+                kategori ON barang.id_kategori = kategori.id_kategori
+            JOIN
+                status_peminjaman ON peminjaman.id_status_peminjaman = status_peminjaman.id_status_peminjaman
+        `);
         return res.status(200).json({ msg: "Berhasil", data: peminjaman });
     } catch (error) {
         return res.status(500).json({ msg: "Terjadi kesalahan", error });
     }
 };
+
+
 
 // Mengubah Status Peminjaman
 const updateStatusPeminjaman = async (req, res) => {
